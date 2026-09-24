@@ -13,7 +13,6 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Optional, Tuple
 import flet as ft
-import unittest
 
 
 # ============================================================================
@@ -106,7 +105,6 @@ class ScholarshipValidator:
         Returns: Lowercased, sanitized email.
         Raises: EmailDomainError if invalid.
         """
-        # TODO: Implement email validation using cls.CSPC_EMAIL_REGEX
         clean = cls.sanitize_string(value)
         if not clean:
             raise ScholarshipValidationError("Institutional email is required.")
@@ -121,7 +119,6 @@ class ScholarshipValidator:
         Returns: Normalized 11-digit phone string.
         Raises: ScholarshipValidationError if invalid.
         """
-        # TODO: Implement phone validation using cls.PH_PHONE_REGEX
         clean = cls.sanitize_string(value)
         if not clean:
             raise ScholarshipValidationError("Philippine mobile number is required.")
@@ -275,13 +272,22 @@ def main(page: ft.Page):
             id_field.error = str(err)
             has_errors = True
 
-        # 3. Validate Email
-        # TODO: Wrap validate_email in try...except and set email_field.error
-        clean_email = None
+      # 3. Validate Email
+        try:
+            clean_email = ScholarshipValidator.validate_email(email_field.value)
+        except ScholarshipValidationError as err:
+            email_field.error = str(err)
+            has_errors = True
+        
 
         # 4. Validate Phone
         # TODO: Wrap validate_phone in try...except and set phone_field.error
-        clean_phone = None
+        try:
+            clean_phone = ScholarshipValidator.validate_phone(phone_field.value)
+        except ScholarshipValidationError as err:
+            phone_field.error = str(err)
+            has_errors = True
+        
 
         # 5. Validate GWA
         try:
