@@ -13,7 +13,6 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Optional, Tuple
 import flet as ft
-import unittest
 
 
 # ============================================================================
@@ -77,7 +76,6 @@ class ScholarshipValidator:
         Returns: Sanitized clean name.
         Raises: ScholarshipValidationError if invalid.
         """
-        # TODO: Implement sanitization and pattern validation
         clean = cls.sanitize_string(value)
         if not clean:
             raise ScholarshipValidationError("Full name is required.")
@@ -94,7 +92,7 @@ class ScholarshipValidator:
         """
         clean_id = cls.sanitize_string(value)
         if not clean_id:
-            raise ScholarshipValidationError("Student ID is required.")
+            raise IDFormatError("Student ID is required.")
         if not cls.STUDENT_ID_REGEX.match(clean_id):
             raise IDFormatError("Invalid student ID. Expected format: YYYY-NNNN (e.g., 2024-0123).")
         return clean_id
@@ -139,8 +137,20 @@ class ScholarshipValidator:
         Returns: Parsed float value.
         Raises: GWARangeError if out of bounds or non-numeric.
         """
-        # TODO: Implement defensive float parsing and range check
-        pass
+        if value is None:
+            raise GWARangeError("GWA value cannot be None.")
+
+        # Try converting string to float
+        try:
+            gwa_float = float(value)
+        except (ValueError, TypeError):
+            raise GWARangeError(f"Invalid GWA value '{value}'. Must be numeric.")
+
+        # Check range bounds (1.00 <= GWA <= 5.00)
+        if not (1.00 <= gwa_float <= 5.00):
+            raise GWARangeError(f"GWA must be between 1.00 and 5.00, got {gwa_float}.")
+
+        return gwa_float
 
 
 # ============================================================================
@@ -257,20 +267,34 @@ def main(page: ft.Page):
             has_errors = True
 
         # 2. Validate Student ID
-        # TODO: Wrap validate_student_id in try...except and set id_field.error
-        clean_id = None
+        try:
+            clean_id = ScholarshipValidator.validate_student_id(id_field.value)
+        except IDFormatError as err:
+            id_field.error = str(err)
+            has_errors = True
 
-    # 3. Validate Email
-        # TODO: Wrap validate_email in try...except and set email_field.error
-        clean_email = None
+      # 3. Validate Email
+        try:
+            clean_email = ScholarshipValidator.validate_email(email_field.value)
+        except EmailDomainError as err:
+            email_field.error = str(err)
+            has_errors = True
+        
 
         # 4. Validate Phone
-        # TODO: Wrap validate_phone in try...except and set phone_field.error
-        clean_phone = None
+        try:
+            clean_phone = ScholarshipValidator.validate_phone(phone_field.value)
+        except ScholarshipValidationError as err:
+            phone_field.error = str(err)
+            has_errors = True
+        
 
         # 5. Validate GWA
-        # TODO: Wrap validate_gwa in try...except and set gwa_field.error
-        clean_gwa = None
+        try:
+            clean_gwa = ScholarshipValidator.validate_gwa(gwa_field.value)
+        except GWARangeError as err:
+            gwa_field.error = str(err)
+            has_errors = True
 
         # 6. Validate Program Selection
         if not program_dropdown.value:
@@ -290,9 +314,34 @@ def main(page: ft.Page):
             return
 
         # 7. All Validations Passed: Instantiate Domain Contract
-        # TODO: Construct ScholarshipApplicant dataclass object
-        # TODO: Append to approved_applicants list
-        # TODO: Display green success SnackBar and reset form fields
+        applicant = ScholarshipApplicant(
+            full_name=clean_name,
+            student_id=clean_id,
+            email=clean_email,
+            phone=clean_phone,
+            gwa=clean_gwa,
+            program=program_dropdown.value
+        )
+
+        # Append to approved applicants list
+        approved_applicants.append(applicant)
+
+        # Display green success SnackBar
+        page.show_dialog(
+            ft.SnackBar(
+                content=ft.Text(f"Application recorded successfully for {applicant.full_name}!"),
+                bgcolor=ft.Colors.GREEN_700,
+                behavior=ft.SnackBarBehavior.FLOATING
+            )
+        )
+
+        # Reset form fields
+        name_field.value = ""
+        id_field.value = ""
+        email_field.value = ""
+        phone_field.value = ""
+        gwa_field.value = ""
+        program_dropdown.value = None
 
         page.update()
 
