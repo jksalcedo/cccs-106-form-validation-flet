@@ -22,7 +22,7 @@ import unittest
 
 class ScholarshipValidationError(Exception):
     """Base exception for all scholarship domain validation errors."""
-    
+    pass
 
 
 class IDFormatError(ScholarshipValidationError):
@@ -109,9 +109,9 @@ class ScholarshipValidator:
         # TODO: Implement email validation using cls.CSPC_EMAIL_REGEX
         clean = cls.sanitize_string(value)
         if not clean:
-            raise ScholarshipValidationError("Institutional email is required.")
+            raise EmailDomainError("Institutional email is required.")
         if not cls.CSPC_EMAIL_REGEX.match(clean):
-            raise EmailDomainError("Enter a valid CSPC email address.")
+            raise EmailDomainError("Institutional email required (must end with @cspc.edu.ph).")
         return clean
 
     @classmethod
@@ -124,7 +124,7 @@ class ScholarshipValidator:
         # TODO: Implement phone validation using cls.PH_PHONE_REGEX
         clean = cls.sanitize_string(value)
         if not clean:
-            raise ScholarshipValidationError("Philippine mobile number is required.")
+            raise ScholarshipValidationError("Mobile number is required.")
         if not cls.PH_PHONE_REGEX.match(clean):
             raise ScholarshipValidationError("Invalid mobile number. Expected: 09XXXXXXXXX or +639XXXXXXXXX.")
         if clean.startswith("+63"):
