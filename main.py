@@ -269,10 +269,13 @@ def main(page: ft.Page):
             has_errors = True
 
         # 2. Validate Student ID
-        # TODO: Wrap validate_student_id in try...except and set id_field.error
-        clean_id = None
+        try:
+            clean_id = ScholarshipValidator.validate_student_id(id_field.value)
+        except ScholarshipValidationError as err:
+            id_field.error = str(err)
+            has_errors = True
 
-    # 3. Validate Email
+        # 3. Validate Email
         # TODO: Wrap validate_email in try...except and set email_field.error
         clean_email = None
 
@@ -281,8 +284,11 @@ def main(page: ft.Page):
         clean_phone = None
 
         # 5. Validate GWA
-        # TODO: Wrap validate_gwa in try...except and set gwa_field.error
-        clean_gwa = None
+        try:
+            clean_gwa = ScholarshipValidator.validate_gwa(gwa_field.value)
+        except ScholarshipValidationError as err:
+            gwa_field.error = str(err)
+            has_errors = True
 
         # 6. Validate Program Selection
         if not program_dropdown.value:
