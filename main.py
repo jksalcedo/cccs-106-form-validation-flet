@@ -286,6 +286,7 @@ def main(page: ft.Page):
         # 5. Validate GWA
         try:
             clean_gwa = ScholarshipValidator.validate_gwa(gwa_field.value)
+        except GWARangeError as err:
         except ScholarshipValidationError as err:
             gwa_field.error = str(err)
             has_errors = True
@@ -308,9 +309,34 @@ def main(page: ft.Page):
             return
 
         # 7. All Validations Passed: Instantiate Domain Contract
-        # TODO: Construct ScholarshipApplicant dataclass object
-        # TODO: Append to approved_applicants list
-        # TODO: Display green success SnackBar and reset form fields
+       applicant = ScholarshipApplicant(
+            full_name=clean_name,
+            student_id=clean_id,
+            email=clean_email,
+            phone=clean_phone,
+            gwa=clean_gwa,
+            program=program_dropdown.value
+        )
+
+        # Append to approved applicants list
+        approved_applicants.append(applicant)
+
+        # Display green success SnackBar
+        page.show_dialog(
+            ft.SnackBar(
+                content=ft.Text(f"Application recorded successfully for {applicant.full_name}!"),
+                bgcolor=ft.Colors.GREEN_700,
+                behavior=ft.SnackBarBehavior.FLOATING
+            )
+        )
+
+        # Reset form fields
+        name_field.value = ""
+        id_field.value = ""
+        email_field.value = ""
+        phone_field.value = ""
+        gwa_field.value = ""
+        program_dropdown.value = None
 
         page.update()
 
