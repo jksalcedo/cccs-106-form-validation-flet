@@ -274,7 +274,7 @@ def main(page: ft.Page):
       # 3. Validate Email
         try:
             clean_email = ScholarshipValidator.validate_email(email_field.value)
-        except ScholarshipValidationError as err:
+        except EmailDomainError as err:
             email_field.error = str(err)
             has_errors = True
         
