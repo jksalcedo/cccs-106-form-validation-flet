@@ -76,7 +76,6 @@ class ScholarshipValidator:
         Returns: Sanitized clean name.
         Raises: ScholarshipValidationError if invalid.
         """
-        # TODO: Implement sanitization and pattern validation
         clean = cls.sanitize_string(value)
         if not clean:
             raise ScholarshipValidationError("Full name is required.")
@@ -268,7 +267,7 @@ def main(page: ft.Page):
         # 2. Validate Student ID
         try:
             clean_id = ScholarshipValidator.validate_student_id(id_field.value)
-        except ScholarshipValidationError as err:
+        except IDFormatError as err:
             id_field.error = str(err)
             has_errors = True
 
