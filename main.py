@@ -281,7 +281,6 @@ def main(page: ft.Page):
         
 
         # 4. Validate Phone
-        # TODO: Wrap validate_phone in try...except and set phone_field.error
         try:
             clean_phone = ScholarshipValidator.validate_phone(phone_field.value)
         except ScholarshipValidationError as err:
@@ -293,7 +292,6 @@ def main(page: ft.Page):
         try:
             clean_gwa = ScholarshipValidator.validate_gwa(gwa_field.value)
         except GWARangeError as err:
-        except ScholarshipValidationError as err:
             gwa_field.error = str(err)
             has_errors = True
 
@@ -315,7 +313,7 @@ def main(page: ft.Page):
             return
 
         # 7. All Validations Passed: Instantiate Domain Contract
-       applicant = ScholarshipApplicant(
+        applicant = ScholarshipApplicant(
             full_name=clean_name,
             student_id=clean_id,
             email=clean_email,
