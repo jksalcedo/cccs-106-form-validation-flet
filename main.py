@@ -91,13 +91,12 @@ class ScholarshipValidator:
         Returns: Normalized student ID.
         Raises: IDFormatError if invalid.
         """
-        # TODO: Implement ID validation using cls.STUDENT_ID_REGEX
-        clean = cls.sanitize_string(value)
-        if not clean:
+        clean_id = cls.sanitize_string(value)
+        if not clean_id:
             raise ScholarshipValidationError("Student ID is required.")
-        if not cls.STUDENT_ID_REGEX.match(clean):
-            raise IDFormatError("Enter a valid student ID (four-digit admission year, hyphen, four sequential digits).")
-        return clean
+        if not cls.STUDENT_ID_REGEX.match(clean_id):
+            raise IDFormatError("Invalid student ID. Expected format: YYYY-NNNN (e.g., 2024-0123).")
+        return clean_id
 
     @classmethod
     def validate_email(cls, value: Optional[str]) -> str:
