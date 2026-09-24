@@ -246,93 +246,91 @@ def main(page: ft.Page):
         # TODO: Wrap validate_student_id in try...except and set id_field.error
         clean_id = None
 
-    # ------------------------------------------------------------------------
-    # 5. GWA NUMERIC & RANGE VALIDATION
-    # ------------------------------------------------------------------------
-    def test_valid_gwa(self):
-        self.assertEqual(ScholarshipValidator.validate_gwa("1.00"), 1.00)
-        self.assertEqual(ScholarshipValidator.validate_gwa(" 1.45 "), 1.45)
-        self.assertEqual(ScholarshipValidator.validate_gwa("5.00"), 5.00)
+    # 3. Validate Email
+        # TODO: Wrap validate_email in try...except and set email_field.error
+        clean_email = None
 
-    def test_invalid_gwa_out_of_bounds(self):
-        with self.assertRaises(GWARangeError):
-            ScholarshipValidator.validate_gwa("0.95")  # Beyond highest honor
-        with self.assertRaises(GWARangeError):
-            ScholarshipValidator.validate_gwa("5.25")  # Beyond failing bound
-        with self.assertRaises(GWARangeError):
-            ScholarshipValidator.validate_gwa("-1.50")
+        # 4. Validate Phone
+        # TODO: Wrap validate_phone in try...except and set phone_field.error
+        clean_phone = None
 
-    def test_invalid_gwa_non_numeric(self):
-        with self.assertRaises(GWARangeError):
-            ScholarshipValidator.validate_gwa("uno")
-        with self.assertRaises(GWARangeError):
-            ScholarshipValidator.validate_gwa("1.45GPA")
-        with self.assertRaises(GWARangeError):
-            ScholarshipValidator.validate_gwa("")
+        # 5. Validate GWA
+        # TODO: Wrap validate_gwa in try...except and set gwa_field.error
+        clean_gwa = None
 
-    # ------------------------------------------------------------------------
-    # 6. DOMAIN CONTRACT (@DATACLASS) IMMUTABILITY
-    # ------------------------------------------------------------------------
-    def test_dataclass_contract_creation(self):
-        applicant = ScholarshipApplicant(
-            full_name="Maria Clara Santos",
-            student_id="2024-0891",
-            email="mclara.santos@cspc.edu.ph",
-            phone="09181234567",
-            gwa=1.45,
-            program="DOST Science & Technology Scholarship"
+        # 6. Validate Program Selection
+        if not program_dropdown.value:
+            program_dropdown.error_text = "Please select an accredited scholarship program."
+            has_errors = True
+
+        # If any validation errors occurred, abort and notify
+        if has_errors:
+            page.show_dialog(
+                ft.SnackBar(
+                    content=ft.Text("Validation failed: Please correct highlighted fields."),
+                    bgcolor=ft.Colors.RED_700,
+                    behavior=ft.SnackBarBehavior.FLOATING
+                )
+            )
+            page.update()
+            return
+
+        # 7. All Validations Passed: Instantiate Domain Contract
+        # TODO: Construct ScholarshipApplicant dataclass object
+        # TODO: Append to approved_applicants list
+        # TODO: Display green success SnackBar and reset form fields
+
+        page.update()
+
+    # Layout Assembly
+    submit_button = ft.FilledButton(
+        content=ft.Row(
+            controls=[
+                ft.Icon(ft.Icons.CHECK_CIRCLE_OUTLINE),
+                ft.Text("Submit Scholarship Application", weight=ft.FontWeight.BOLD)
+            ],
+            alignment=ft.MainAxisAlignment.CENTER
+        ),
+        style=ft.ButtonStyle(
+            bgcolor=ft.Colors.BLUE_700,
+            shape=ft.RoundedRectangleBorder(radius=8)
+        ),
+        height=48,
+        on_click=submit_application
+    )
+
+    page.add(
+        ft.Column(
+            controls=[
+                ft.Row(
+                    controls=[
+                        ft.Icon(ft.Icons.LOCAL_POLICE, size=32, color=ft.Colors.BLUE_400),
+                        ft.Column(
+                            controls=[
+                                ft.Text("CSPC Scholarship Intake Portal", size=20, weight=ft.FontWeight.BOLD),
+                                ft.Text("Office of Student Affairs & Services • Academic Year 2026–2027", size=12, color=ft.Colors.GREY_400)
+                            ],
+                            spacing=2
+                        )
+                    ]
+                ),
+                ft.Divider(height=20, color=ft.Colors.OUTLINE_VARIANT),
+                name_field,
+                id_field,
+                email_field,
+                phone_field,
+                gwa_field,
+                program_dropdown,
+                ft.Container(height=10),
+                submit_button,
+                ft.Container(height=5),
+                status_summary
+            ],
+            spacing=14,
+            scroll=ft.ScrollMode.AUTO
         )
-        self.assertEqual(applicant.full_name, "Maria Clara Santos")
-        self.assertEqual(applicant.gwa, 1.45)
-
-        # Frozen contract test (mutation must raise FrozenInstanceError)
-        with self.assertRaises(Exception):
-            applicant.gwa = 1.00
-
-    # ------------------------------------------------------------------------
-    # 7. GUI EVENT FLOW INTEGRATION TEST (MOCK RUNNER)
-    # ------------------------------------------------------------------------
-    def test_gui_submission_flow(self):
-        from unittest.mock import MagicMock
-        import flet as ft
-        import scholarship_portal
-
-        mock_page = MagicMock()
-        mock_page.window = MagicMock()
-        mock_page.show_dialog = MagicMock()
-        mock_page.update = MagicMock()
-
-        # Initialize GUI
-        scholarship_portal.main(mock_page)
-
-        col = mock_page.add.call_args[0][0]
-        submit_btn = next(c for c in col.controls if isinstance(c, ft.FilledButton))
-        name_field = col.controls[2]
-        id_field = col.controls[3]
-        email_field = col.controls[4]
-        phone_field = col.controls[5]
-        gwa_field = col.controls[6]
-        program_dropdown = col.controls[7]
-
-        # Trigger submission on invalid empty fields
-        submit_btn.on_click(MagicMock())
-        self.assertIsNotNone(name_field.error)
-        self.assertTrue(mock_page.show_dialog.called)
-
-        # Populate valid applicant data
-        name_field.value = "Maria Clara Santos"
-        id_field.value = "2024-0891"
-        email_field.value = "mclara.santos@cspc.edu.ph"
-        phone_field.value = "09181234567"
-        gwa_field.value = "1.45"
-        program_dropdown.value = "DOST Science & Technology Scholarship"
-
-        # Trigger valid submission (builds dataclass and card with ft.Border.all)
-        mock_page.show_dialog.reset_mock()
-        submit_btn.on_click(MagicMock())
-        self.assertIsNone(name_field.error)
-        self.assertTrue(mock_page.show_dialog.called)
+    )
 
 
 if __name__ == "__main__":
-    unittest.main()
+    ft.run(main)
