@@ -125,8 +125,20 @@ class ScholarshipValidator:
         Returns: Parsed float value.
         Raises: GWARangeError if out of bounds or non-numeric.
         """
-        # TODO: Implement defensive float parsing and range check
-        pass
+        if value is None:
+            raise GWARangeError("GWA value cannot be None.")
+
+        # Try converting string to float
+        try:
+            gwa_float = float(value)
+        except (ValueError, TypeError):
+            raise GWARangeError(f"Invalid GWA value '{value}'. Must be numeric.")
+
+        # Check range bounds (1.00 <= GWA <= 5.00)
+        if not (1.00 <= gwa_float <= 5.00):
+            raise GWARangeError(f"GWA must be between 1.00 and 5.00, got {gwa_float}.")
+
+        return gwa_float
 
 
 # ============================================================================
