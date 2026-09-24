@@ -8,7 +8,7 @@ ScholarshipApplicant domain contracts without requiring a GUI window.
 """
 
 import unittest
-from scholarship_portal import (
+from main import (
     ScholarshipValidator,
     ScholarshipApplicant,
     ScholarshipValidationError,
@@ -153,7 +153,7 @@ class TestScholarshipValidator(unittest.TestCase):
     def test_gui_submission_flow(self):
         from unittest.mock import MagicMock
         import flet as ft
-        import scholarship_portal
+        import main
 
         mock_page = MagicMock()
         mock_page.window = MagicMock()
@@ -161,7 +161,7 @@ class TestScholarshipValidator(unittest.TestCase):
         mock_page.update = MagicMock()
 
         # Initialize GUI
-        scholarship_portal.main(mock_page)
+        main.main(mock_page)
 
         col = mock_page.add.call_args[0][0]
         submit_btn = next(c for c in col.controls if isinstance(c, ft.FilledButton))
