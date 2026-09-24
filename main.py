@@ -92,7 +92,7 @@ class ScholarshipValidator:
         """
         clean_id = cls.sanitize_string(value)
         if not clean_id:
-            raise ScholarshipValidationError("Student ID is required.")
+            raise IDFormatError("Student ID is required.")
         if not cls.STUDENT_ID_REGEX.match(clean_id):
             raise IDFormatError("Invalid student ID. Expected format: YYYY-NNNN (e.g., 2024-0123).")
         return clean_id
