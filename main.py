@@ -13,7 +13,6 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Optional, Tuple
 import flet as ft
-import unittest
 
 
 # ============================================================================
@@ -261,12 +260,21 @@ def main(page: ft.Page):
         clean_id = None
 
     # 3. Validate Email
-        # TODO: Wrap validate_email in try...except and set email_field.error
-        clean_email = None
+        try:
+            clean_email = ScholarshipValidator.validate_email(email_field.value)
+        except ScholarshipValidationError as err:
+            email_field.error = str(err)
+            has_errors = True
+        
 
         # 4. Validate Phone
         # TODO: Wrap validate_phone in try...except and set phone_field.error
-        clean_phone = None
+        try:
+            clean_phone = ScholarshipValidator.validate_phone(phone_field.value)
+        except ScholarshipValidationError as err:
+            phone_field.error = str(err)
+            has_errors = True
+        
 
         # 5. Validate GWA
         # TODO: Wrap validate_gwa in try...except and set gwa_field.error
