@@ -105,7 +105,6 @@ class ScholarshipValidator:
         Returns: Lowercased, sanitized email.
         Raises: EmailDomainError if invalid.
         """
-        # TODO: Implement email validation using cls.CSPC_EMAIL_REGEX
         clean = cls.sanitize_string(value)
         if not clean:
             raise ScholarshipValidationError("Institutional email is required.")
@@ -120,7 +119,6 @@ class ScholarshipValidator:
         Returns: Normalized 11-digit phone string.
         Raises: ScholarshipValidationError if invalid.
         """
-        # TODO: Implement phone validation using cls.PH_PHONE_REGEX
         clean = cls.sanitize_string(value)
         if not clean:
             raise ScholarshipValidationError("Philippine mobile number is required.")
@@ -138,8 +136,20 @@ class ScholarshipValidator:
         Returns: Parsed float value.
         Raises: GWARangeError if out of bounds or non-numeric.
         """
-        # TODO: Implement defensive float parsing and range check
-        pass
+        if value is None:
+            raise GWARangeError("GWA value cannot be None.")
+
+        # Try converting string to float
+        try:
+            gwa_float = float(value)
+        except (ValueError, TypeError):
+            raise GWARangeError(f"Invalid GWA value '{value}'. Must be numeric.")
+
+        # Check range bounds (1.00 <= GWA <= 5.00)
+        if not (1.00 <= gwa_float <= 5.00):
+            raise GWARangeError(f"GWA must be between 1.00 and 5.00, got {gwa_float}.")
+
+        return gwa_float
 
 
 # ============================================================================
@@ -256,10 +266,13 @@ def main(page: ft.Page):
             has_errors = True
 
         # 2. Validate Student ID
-        # TODO: Wrap validate_student_id in try...except and set id_field.error
-        clean_id = None
+        try:
+            clean_id = ScholarshipValidator.validate_student_id(id_field.value)
+        except ScholarshipValidationError as err:
+            id_field.error = str(err)
+            has_errors = True
 
-    # 3. Validate Email
+      # 3. Validate Email
         try:
             clean_email = ScholarshipValidator.validate_email(email_field.value)
         except ScholarshipValidationError as err:
@@ -277,8 +290,12 @@ def main(page: ft.Page):
         
 
         # 5. Validate GWA
-        # TODO: Wrap validate_gwa in try...except and set gwa_field.error
-        clean_gwa = None
+        try:
+            clean_gwa = ScholarshipValidator.validate_gwa(gwa_field.value)
+        except GWARangeError as err:
+        except ScholarshipValidationError as err:
+            gwa_field.error = str(err)
+            has_errors = True
 
         # 6. Validate Program Selection
         if not program_dropdown.value:
@@ -298,9 +315,34 @@ def main(page: ft.Page):
             return
 
         # 7. All Validations Passed: Instantiate Domain Contract
-        # TODO: Construct ScholarshipApplicant dataclass object
-        # TODO: Append to approved_applicants list
-        # TODO: Display green success SnackBar and reset form fields
+       applicant = ScholarshipApplicant(
+            full_name=clean_name,
+            student_id=clean_id,
+            email=clean_email,
+            phone=clean_phone,
+            gwa=clean_gwa,
+            program=program_dropdown.value
+        )
+
+        # Append to approved applicants list
+        approved_applicants.append(applicant)
+
+        # Display green success SnackBar
+        page.show_dialog(
+            ft.SnackBar(
+                content=ft.Text(f"Application recorded successfully for {applicant.full_name}!"),
+                bgcolor=ft.Colors.GREEN_700,
+                behavior=ft.SnackBarBehavior.FLOATING
+            )
+        )
+
+        # Reset form fields
+        name_field.value = ""
+        id_field.value = ""
+        email_field.value = ""
+        phone_field.value = ""
+        gwa_field.value = ""
+        program_dropdown.value = None
 
         page.update()
 
