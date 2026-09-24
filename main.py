@@ -107,7 +107,7 @@ class ScholarshipValidator:
         Raises: EmailDomainError if invalid.
         """
         # TODO: Implement email validation using cls.CSPC_EMAIL_REGEX
-        clean = cls.sanitize_string(value)
+        clean = cls.sanitize_string(value).strip().lower()
         if not clean:
             raise EmailDomainError("Institutional email is required.")
         if not cls.CSPC_EMAIL_REGEX.match(clean):
@@ -122,7 +122,7 @@ class ScholarshipValidator:
         Raises: ScholarshipValidationError if invalid.
         """
         # TODO: Implement phone validation using cls.PH_PHONE_REGEX
-        clean = cls.sanitize_string(value)
+        clean = value.strip().replace(" ", "").replace("-", "")
         if not clean:
             raise ScholarshipValidationError("Mobile number is required.")
         if not cls.PH_PHONE_REGEX.match(clean):
