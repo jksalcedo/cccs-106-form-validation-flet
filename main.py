@@ -105,8 +105,13 @@ class ScholarshipValidator:
         Returns: Lowercased, sanitized email.
         Raises: EmailDomainError if invalid.
         """
-        # TODO: Implement email validation using cls.CSPC_EMAIL_REGEX
-        pass
+        
+        clean = cls.sanitize_string(value).strip().lower()
+        if not clean:
+            raise EmailDomainError("Institutional email is required.")
+        if not cls.CSPC_EMAIL_REGEX.match(clean):
+            raise EmailDomainError("Institutional email required (must end with @cspc.edu.ph).")
+        return clean
 
     @classmethod
     def validate_phone(cls, value: Optional[str]) -> str:
@@ -115,8 +120,16 @@ class ScholarshipValidator:
         Returns: Normalized 11-digit phone string.
         Raises: ScholarshipValidationError if invalid.
         """
-        # TODO: Implement phone validation using cls.PH_PHONE_REGEX
-        pass
+        
+        clean = cls.sanitize_string(value).replace(" ", "").replace("-", "")
+        if not clean:
+            raise ScholarshipValidationError("Mobile number is required.")
+        if not cls.PH_PHONE_REGEX.match(clean):
+            raise ScholarshipValidationError("Invalid mobile number. Expected: 09XXXXXXXXX or +639XXXXXXXXX.")
+        if clean.startswith("+63"):
+            clean = "0" + clean[3:]
+        return clean
+        
 
     @classmethod
     def validate_gwa(cls, value: Optional[str]) -> float:
@@ -125,8 +138,15 @@ class ScholarshipValidator:
         Returns: Parsed float value.
         Raises: GWARangeError if out of bounds or non-numeric.
         """
-        # TODO: Implement defensive float parsing and range check
-        pass
+        try:
+            gwa_float = float(value)
+        except (ValueError, TypeError):
+            raise GWARangeError("GWA must be a valid number between 1.00 and 5.00.")
+
+        if not (1.00 <= gwa_float <= 5.00):
+            raise GWARangeError("GWA must be between 1.00 and 5.00.")
+
+        return gwa_float
 
 
 # ============================================================================
