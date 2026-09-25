@@ -104,7 +104,6 @@ class ScholarshipValidator:
         Returns: Lowercased, sanitized email.
         Raises: EmailDomainError if invalid.
         """
-        # TODO: Implement email validation using cls.CSPC_EMAIL_REGEX
         clean = cls.sanitize_string(value).strip().lower()
         if not clean:
             raise EmailDomainError("Institutional email is required.")
@@ -119,7 +118,6 @@ class ScholarshipValidator:
         Returns: Normalized 11-digit phone string.
         Raises: ScholarshipValidationError if invalid.
         """
-        # TODO: Implement phone validation using cls.PH_PHONE_REGEX
         clean = cls.sanitize_string(value).replace(" ", "").replace("-", "")
         if not clean:
             raise ScholarshipValidationError("Mobile number is required.")
@@ -143,7 +141,7 @@ class ScholarshipValidator:
             raise GWARangeError("GWA must be a valid number between 1.00 and 5.00.")
 
         if not (1.00 <= gwa_float <= 5.00):
-            raise GWARangeError("GWA must be a valid number between 1.00 and 5.00.")
+            raise GWARangeError("GWA must be between 1.00 and 5.00.")
 
         return gwa_float
 
