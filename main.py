@@ -59,7 +59,7 @@ class ScholarshipValidator:
     """Encapsulated validation rules and regex logic for scholarship applicants."""
 
     # Compile Regular Expressions
-    NAME_REGEX = re.compile(r"^[A-Za-z\s.\-',]{2,60}$")
+    NAME_REGEX = re.compile(r"^[A-Za-z\s.\-]{2,60}$")
     STUDENT_ID_REGEX = re.compile(r"^20\d{2}-\d{4,5}$")
     CSPC_EMAIL_REGEX = re.compile(r"^[a-zA-Z0-9_.+-]+@cspc\.edu\.ph$")
     PH_PHONE_REGEX = re.compile(r"^(?:\+63|0)9\d{9}$")
@@ -94,7 +94,7 @@ class ScholarshipValidator:
         if not clean_id:
             raise IDFormatError("Student ID is required.")
         if not cls.STUDENT_ID_REGEX.match(clean_id):
-            raise IDFormatError("Invalid student ID. Expected format: YYYY-NNNN (e.g., 2024-0123).")
+            raise IDFormatError("Invalid Student ID. Expected format: YYYY-NNNN (e.g., 2024-0123).")
         return clean_id
 
     @classmethod
@@ -120,7 +120,7 @@ class ScholarshipValidator:
         Raises: ScholarshipValidationError if invalid.
         """
         # TODO: Implement phone validation using cls.PH_PHONE_REGEX
-        clean = value.strip().replace(" ", "").replace("-", "")
+        clean = cls.sanitize_string(value).replace(" ", "").replace("-", "")
         if not clean:
             raise ScholarshipValidationError("Mobile number is required.")
         if not cls.PH_PHONE_REGEX.match(clean):
@@ -137,18 +137,13 @@ class ScholarshipValidator:
         Returns: Parsed float value.
         Raises: GWARangeError if out of bounds or non-numeric.
         """
-        if value is None:
-            raise GWARangeError("GWA value cannot be None.")
-
-        # Try converting string to float
         try:
             gwa_float = float(value)
         except (ValueError, TypeError):
-            raise GWARangeError(f"Invalid GWA value '{value}'. Must be numeric.")
+            raise GWARangeError("GWA must be a valid number between 1.00 and 5.00.")
 
-        # Check range bounds (1.00 <= GWA <= 5.00)
         if not (1.00 <= gwa_float <= 5.00):
-            raise GWARangeError(f"GWA must be between 1.00 and 5.00, got {gwa_float}.")
+            raise GWARangeError("GWA must be a valid number between 1.00 and 5.00.")
 
         return gwa_float
 
@@ -211,6 +206,7 @@ def main(page: ft.Page):
         border_radius=8,
         options=[
             ft.dropdown.Option("CHED Tulong Dunong Program (TDP)"),
+            ft.dropdown.Option("DOST Merit Scholarship"),
             ft.dropdown.Option("DOST Science & Technology Scholarship"),
             ft.dropdown.Option("CSPC Institutional Academic Scholarship"),
             ft.dropdown.Option("UniFAST Tertiary Education Subsidy (TES)"),
@@ -329,7 +325,7 @@ def main(page: ft.Page):
         # Display green success SnackBar
         page.show_dialog(
             ft.SnackBar(
-                content=ft.Text(f"Application recorded successfully for {applicant.full_name}!"),
+                content=ft.Text(f"Application accepted for {applicant.full_name}!"),
                 bgcolor=ft.Colors.GREEN_700,
                 behavior=ft.SnackBarBehavior.FLOATING
             )
